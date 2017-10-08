@@ -1,6 +1,11 @@
 package org.openweathermap.api;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.openweathermap.api.gson.WindDirectionDeserializer;
 import org.openweathermap.api.gson.WindDirectionSerializer;
 import org.openweathermap.api.model.WindDirection;
@@ -19,6 +24,7 @@ import org.openweathermap.api.query.forecast.hourly.HourlyForecastQuery;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -30,12 +36,12 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
     private final JsonParser jsonParser = new JsonParser();
 
     @Override
-    public ForecastInformation<HourlyForecast> getForecastInformation(HourlyForecastQuery query) {
+    public ImmutablePair<ForecastInformation<HourlyForecast>, RequestResponse> getForecastInformation(HourlyForecastQuery query) {
         return toForecastInformation(query, HourlyForecast.TYPE);
     }
 
     @Override
-    public ForecastInformation<DailyForecast> getForecastInformation(DailyForecastQuery query) {
+    public ImmutablePair<ForecastInformation<DailyForecast>, RequestResponse> getForecastInformation(DailyForecastQuery query) {
         return toForecastInformation(query, DailyForecast.TYPE);
     }
 
@@ -46,27 +52,36 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
 
 
     @Override
-    public CurrentWeather getCurrentWeather(CurrentWeatherOneLocationQuery query) {
+    public ImmutablePair<CurrentWeather, RequestResponse> getCurrentWeather(CurrentWeatherOneLocationQuery query) {
         return toCurrentWeather(query);
     }
 
     @Override
-    public List<CurrentWeather> getCurrentWeather(CurrentWeatherMultipleLocationsQuery query) {
+    public ImmutablePair<List<CurrentWeather>, RequestResponse> getCurrentWeather(CurrentWeatherMultipleLocationsQuery query) {
         return toCurrentWeather(query);
     }
 
     protected abstract String makeRequest(Query query);
 
-    private CurrentWeather toCurrentWeather(CurrentWeatherOneLocationQuery query) {
+    private ImmutablePair<CurrentWeather, RequestResponse> toCurrentWeather(CurrentWeatherOneLocationQuery query) {
         String data = getWeatherData(query);
         ResponseFormat responseFormat = query.getResponseFormat();
         if (responseFormat == null || responseFormat == ResponseFormat.JSON) {
-            return gson.fromJson(data, CurrentWeather.TYPE);
+            CurrentWeather currentWeather = gson.fromJson(data, CurrentWeather.TYPE);
+
+            RequestResponse requestResponse = new RequestResponse();
+            requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
+            requestResponse.setResponse(data);
+            requestResponse.setTime(new Date());
+
+            ImmutablePair<CurrentWeather, RequestResponse> currentWeatherRequestResponsePair =
+                    new ImmutablePair<CurrentWeather, RequestResponse>(currentWeather, requestResponse);
+            return currentWeatherRequestResponsePair;
         }
         return null;
     }
 
-    private List<CurrentWeather> toCurrentWeather(CurrentWeatherMultipleLocationsQuery query) {
+    private ImmutablePair<List<CurrentWeather>, RequestResponse> toCurrentWeather(CurrentWeatherMultipleLocationsQuery query) {
         String data = getWeatherData(query);
         JsonObject jsonObject = jsonParser.parse(data).getAsJsonObject();
         JsonArray list = jsonObject.getAsJsonArray("list");
@@ -75,14 +90,34 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
             CurrentWeather weatherInfo = gson.fromJson(list.get(i), CurrentWeather.TYPE);
             weatherInfoList.add(weatherInfo);
         }
-        return weatherInfoList;
+
+        RequestResponse requestResponse = new RequestResponse();
+        requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
+        requestResponse.setResponse(data);
+        requestResponse.setTime(new Date());
+
+        ImmutablePair<List<CurrentWeather>, RequestResponse> currentWeathersRequestResponsePair =
+                new ImmutablePair<List<CurrentWeather>, RequestResponse>(weatherInfoList, requestResponse);
+
+        return currentWeathersRequestResponsePair;
     }
 
-    private <T extends Forecast> ForecastInformation<T> toForecastInformation(ForecastQuery query, Type type) {
+    private <T extends Forecast> ImmutablePair<ForecastInformation<T>, RequestResponse> toForecastInformation(ForecastQuery query, Type type) {
         String data = getWeatherData(query);
         ResponseFormat responseFormat = query.getResponseFormat();
         if (responseFormat == null || responseFormat == ResponseFormat.JSON) {
-            return gson.fromJson(data, type);
+            ForecastInformation<T> forecast = gson.fromJson(data, type);
+
+
+            RequestResponse requestResponse = new RequestResponse();
+            requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
+            requestResponse.setResponse(data);
+            requestResponse.setTime(new Date());
+
+            ImmutablePair<ForecastInformation<T>, RequestResponse> forecastRequestResponsePair =
+                    new ImmutablePair<ForecastInformation<T>, RequestResponse>(forecast, requestResponse);
+
+            return forecastRequestResponsePair;
         }
         return null;
     }

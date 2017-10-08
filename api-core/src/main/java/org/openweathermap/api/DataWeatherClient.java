@@ -1,5 +1,6 @@
 package org.openweathermap.api;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.openweathermap.api.model.currentweather.CurrentWeather;
 import org.openweathermap.api.model.forecast.ForecastInformation;
 import org.openweathermap.api.model.forecast.daily.DailyForecast;
@@ -13,11 +14,11 @@ import java.util.List;
 
 public interface DataWeatherClient extends WeatherClient {
 
-    CurrentWeather getCurrentWeather(CurrentWeatherOneLocationQuery query);
+    ImmutablePair<CurrentWeather, RequestResponse> getCurrentWeather(CurrentWeatherOneLocationQuery query);
 
-    List<CurrentWeather> getCurrentWeather(CurrentWeatherMultipleLocationsQuery query);
+    ImmutablePair<List<CurrentWeather>, RequestResponse> getCurrentWeather(CurrentWeatherMultipleLocationsQuery query);
 
-    ForecastInformation<HourlyForecast> getForecastInformation(HourlyForecastQuery query);
+    ImmutablePair<ForecastInformation<HourlyForecast>, RequestResponse> getForecastInformation(HourlyForecastQuery query);
 
-    ForecastInformation<DailyForecast> getForecastInformation(DailyForecastQuery query);
+    ImmutablePair<ForecastInformation<DailyForecast>, RequestResponse> getForecastInformation(DailyForecastQuery query);
 }

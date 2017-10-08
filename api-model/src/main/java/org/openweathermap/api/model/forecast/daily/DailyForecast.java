@@ -24,4 +24,7 @@ public class DailyForecast extends AbstractWeatherResponse implements Forecast {
     private double rain;
     @SerializedName("deg")
     private WindDirection direction;
+
+    private double pressure;
+    private double snow;
 }
