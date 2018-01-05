@@ -1,10 +1,6 @@
 package org.openweathermap.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.openweathermap.api.gson.WindDirectionDeserializer;
 import org.openweathermap.api.gson.WindDirectionSerializer;
@@ -69,10 +65,7 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
         if (responseFormat == null || responseFormat == ResponseFormat.JSON) {
             CurrentWeather currentWeather = gson.fromJson(data, CurrentWeather.TYPE);
 
-            RequestResponse requestResponse = new RequestResponse();
-            requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
-            requestResponse.setResponse(data);
-            requestResponse.setTime(new Date());
+            RequestResponse requestResponse = constructRequestResponse(query, data);
 
             ImmutablePair<CurrentWeather, RequestResponse> currentWeatherRequestResponsePair =
                     new ImmutablePair<CurrentWeather, RequestResponse>(currentWeather, requestResponse);
@@ -91,10 +84,7 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
             weatherInfoList.add(weatherInfo);
         }
 
-        RequestResponse requestResponse = new RequestResponse();
-        requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
-        requestResponse.setResponse(data);
-        requestResponse.setTime(new Date());
+        RequestResponse requestResponse = constructRequestResponse(query, data);
 
         ImmutablePair<List<CurrentWeather>, RequestResponse> currentWeathersRequestResponsePair =
                 new ImmutablePair<List<CurrentWeather>, RequestResponse>(weatherInfoList, requestResponse);
@@ -109,10 +99,7 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
             ForecastInformation<T> forecast = gson.fromJson(data, type);
 
 
-            RequestResponse requestResponse = new RequestResponse();
-            requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
-            requestResponse.setResponse(data);
-            requestResponse.setTime(new Date());
+            RequestResponse requestResponse = constructRequestResponse(query, data);
 
             ImmutablePair<ForecastInformation<T>, RequestResponse> forecastRequestResponsePair =
                     new ImmutablePair<ForecastInformation<T>, RequestResponse>(forecast, requestResponse);
@@ -120,5 +107,14 @@ public abstract class AbstractDataWeatherClient implements DataWeatherClient {
             return forecastRequestResponsePair;
         }
         return null;
+    }
+
+    private RequestResponse constructRequestResponse(Query query, String data) {
+        RequestResponse requestResponse = new RequestResponse();
+        requestResponse.setQuery(query.toStringRepresentation("API_KEY"));
+        requestResponse.setResponse(data);
+        requestResponse.setTime(new Date());
+
+        return requestResponse;
     }
 }
