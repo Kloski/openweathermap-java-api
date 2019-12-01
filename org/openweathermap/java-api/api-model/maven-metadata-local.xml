@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
   <groupId>org.openweathermap.java-api</groupId>
-  <artifactId>api-core</artifactId>
+  <artifactId>api-model</artifactId>
   <versioning>
     <release>1.1-snapshot</release>
     <versions>
       <version>1.1-snapshot</version>
     </versions>
-    <lastUpdated>20191025210154</lastUpdated>
+    <lastUpdated>20191025210159</lastUpdated>
   </versioning>
 </metadata>
