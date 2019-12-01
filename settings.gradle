@@ -1,7 +1,0 @@
-rootProject.name = 'openweathermap-java-api'
-include 'api-core'
-include 'api-examples'
-include 'api-query'
-include 'api-common'
-include 'api-model'
-
